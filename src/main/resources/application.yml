@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: ai-code-helper
+  profiles:
+    active: local
+server:
+  port: 8090
+  servlet:
+    context-path: /api
