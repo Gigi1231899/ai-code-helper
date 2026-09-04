@@ -1,5 +1,11 @@
 ########Custom##########
+# 部署环境变量（含密钥）
+.env
 application-local.yml
+# 运行时数据：用户上传的知识库文件 + 每用户向量库（含个人信息，不入库）
+data/
+# 构建日志
+build.log
 !**/src/main/resources/docs/
 前端生成+后端接口补充说明.md
 
