@@ -1,5 +1,6 @@
 package com.xuqi.aicodehelper.ai;
 
+import com.xuqi.aicodehelper.ai.service.RagService;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AiCodeHelperServiceTest {
 
     @Resource
-    private AiCodeHelperService aiCodeHelperService;
+    private RagService aiCodeHelperService;
 //    @Test
 //    public void testMultiUserChat() {
 //        // 用户 A 的对话
