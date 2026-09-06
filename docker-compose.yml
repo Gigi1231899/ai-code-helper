@@ -1,0 +1,95 @@
+# =============================================================
+# 生产部署编排：后端 + MySQL
+#
+# 首次使用：
+#   1. 复制 .env 为 .env 并填写密钥（若已设置系统环境变量可跳过）
+#   2. docker compose up -d
+#   3. MySQL 首次启动会自动执行 src/main/resources/db/schema.sql 建库建表
+# =============================================================
+services:
+  # ---------- 前端 ----------
+  frontend:
+    build:
+      # 【修复】原来写成 /ai-code-helper-frontend/. ，"/" 开头是文件系统根目录，构建必然找不到
+      # 这里要改成相对 docker-compose.yml 所在目录的路径
+      context: ./ai-code-helper-frontend
+      dockerfile: Dockerfile
+    container_name: ai-code-helper-frontend
+    restart: unless-stopped
+    # 【修复】nginx.conf 里 proxy_pass 写的是静态域名 ai-code-helper-app，
+    # nginx 启动时会解析该主机名，若 app 容器还没创建会报 host not found in upstream 直接退出
+    depends_on:
+      - app
+    ports:
+      - '80:80'
+      # 【修复】nginx.conf 里没有 443 的 server 块、也没挂载证书，这个映射是空壳
+      # 需要 HTTPS 时：取消下面的注释 + 在 nginx.conf 加 443 server 块并把证书挂进容器
+      # - '443:443'
+
+
+
+  # ---------- MySQL ----------
+  mysql:
+    image: mysql:8.0
+    container_name: ai-code-helper-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:1234}
+      MYSQL_DATABASE: ai_code_helper
+      TZ: Asia/Shanghai
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    # 【修复】生产环境不要把数据库暴露到公网，已注释（注意 ports 键本身也要注释，
+    # 否则留一个空 ports 会被当成 null，compose 会报 ports must be a array）
+    # 需要用 Navicat 等工具临时连库时再打开（用完后记得关掉、并配置防火墙只允许内网）
+    # ports:
+    #   - '3306:3306'
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # 容器首次启动自动初始化表结构
+      # 注意：mysql-data 卷里一旦有数据，这个文件就不会再执行了，后续改表结构需手动进容器执行
+      - ./src/main/resources/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1', '-uroot', '-p${DB_PASSWORD:1234}']
+      interval: 10s
+      timeout: 5s
+      # 【修复】首次启动要初始化数据目录并执行 schema.sql，可能超过 10×10s=100s，
+      # 原来会导致 app 一直等不到 healthy；加大重试次数 + 给一段启动宽限期
+      retries: 30
+      start_period: 60s
+
+  # ---------- 后端 ----------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-code-helper-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      # 容器内通过服务名 mysql 访问数据库
+      DB_URL: jdbc:mysql://mysql:3306/ai_code_helper?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      # JWT 密钥，HS256 要求至少 32 字节
+      # 注意：.env 里现在还是占位值 please-change-me...，上线前务必换成随机串：openssl rand -base64 48
+      JWT_SECRET: ${JWT_SECRET:?请在 .env 中设置 JWT_SECRET}
+      JWT_EXPIRATION_HOURS: 168
+      # 阿里百炼（通义千问）Key
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:?请在 .env 中设置 DASHSCOPE_API_KEY}
+      # 智谱 MCP 联网搜索 Key
+      BIGMODEL_API_KEY: ${BIGMODEL_API_KEY:?请在 .env 中设置 BIGMODEL_API_KEY}
+      TZ: Asia/Shanghai
+    ports:
+      - '8090:8090'
+    volumes:
+      # 【修复】原来写 /ai-code-helper/data:... ，"/" 开头会在宿主机根目录创建目录，
+      # 数据不在项目下、备份迁移都不方便；改成相对 docker-compose.yml 的路径
+      # 用户知识库文件与每用户向量库持久化，绑定挂载
+      - ./data:/app/data
+
+volumes:
+  mysql-data:
+

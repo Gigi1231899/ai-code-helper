@@ -1,9 +1,48 @@
 spring:
   application:
     name: ai-code-helper
+  # 默认使用 local 配置（application-local.yml 已被 .gitignore 忽略，密钥不外泄）
   profiles:
     active: local
+  # 数据源驱动，连接地址/账号密码放在各环境配置里
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  # 文件上传限制（与 app.knowledge-base.max-file-size-mb 保持一致，这里做第一道拦截）
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
 server:
   port: 8090
   servlet:
     context-path: /api
+
+# =============================================================
+# MyBatis-Plus 配置
+# =============================================================
+mybatis-plus:
+  configuration:
+    # 下划线转驼峰：create_time -> createTime
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      # 主键使用数据库自增，保证会话ID是递增的 int
+      id-type: auto
+
+# =============================================================
+# 应用自定义配置
+# =============================================================
+app:
+  # 用户文件 / 向量库落盘根目录（相对工作目录；Docker 中建议挂载到 /app/data）
+  storage:
+    base-path: data
+  # 私人知识库上传规则
+  knowledge-base:
+    # 单文件大小上限（MB），技术文档一般 < 5MB，这里放宽到 10MB
+    max-file-size-mb: 10
+    # 每个用户最多上传的文件数
+    max-files-per-user: 50
+    # 允许上传的文档后缀（白名单，防止上传可执行文件）
+    allowed-extensions: txt,md,docx,doc,pdf

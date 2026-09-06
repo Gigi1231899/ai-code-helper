@@ -1,6 +1,6 @@
-# AI对话基础—ChatModel
+# 一、AI对话基础—ChatModel
 
-# 一、 starter依赖+ChatModel对象注入
+ starter依赖+ChatModel对象注入
 
 langchain4j为阿里百炼大模型提供的springboot starter，yml里配置好apikey能加载ChatModel bean
 
@@ -260,38 +260,40 @@ new UserMessage(List<Content> contents)     // 构造方法④ (最终落地)
                return new DefaultAiServices(context);
            }
        }
+   (3)上下文对话模型是qwenchatmodel
+    public AiServices<T> chatModel(ChatModel chatModel) {
+    this.context.chatModel = chatModel;
+    return this;
+    }
+   
+   (4)build方法子类defaultservice实现，代理对象强制转换类型为AiCodeHelperService
+    public T build() {
+    // 1. 各种校验（ChatMemory、@Moderate、返回值类型等）
+    this.performBasicValidation();
+    // ... 省略校验代码 ...
+   // 2. 使用 JDK 动态代理创建代理对象
+      Object proxyInstance = Proxy.newProxyInstance(
+          this.context.aiServiceClass.getClassLoader(),  // 类加载器
+          new Class[]{this.context.aiServiceClass},      // 实现的接口列表（就是你那个接口）
+          new InvocationHandler() { ... }                // 方法调用处理器
+      );
+   
+   // - 所有方法的签名（返回值类型、参数类型）
+    // - 所有方法的注解（@SystemMessage、@UserMessage、@Moderate 等）
+    // - 所有参数的注解（@MemoryId、@V 等）
+      // 3. 强制转型返回
+      return (T) proxyInstance;
+   }
    ```
 
-   (3)上下文对话模型是qwenchatmodel
-   public AiServices<T> chatModel(ChatModel chatModel) {
-           this.context.chatModel = chatModel;
-           return this;
-       }
+  
 
-   (4)build方法子类defaultservice实现，代理对象强制转换类型为AiCodeHelperService
-   public T build() {
-       // 1. 各种校验（ChatMemory、@Moderate、返回值类型等）
-       this.performBasicValidation();
-       // ... 省略校验代码 ...
+ 
+ 
 
-       // 2. 使用 JDK 动态代理创建代理对象
-       Object proxyInstance = Proxy.newProxyInstance(
-           this.context.aiServiceClass.getClassLoader(),  // 类加载器
-           new Class[]{this.context.aiServiceClass},      // 实现的接口列表（就是你那个接口）
-           new InvocationHandler() { ... }                // 方法调用处理器
-       );
-    
-       // 3. 强制转型返回
-       return (T) proxyInstance;
-
-   }
-   // - 所有方法的签名（返回值类型、参数类型）
-       // - 所有方法的注解（@SystemMessage、@UserMessage、@Moderate 等）
-       // - 所有参数的注解（@MemoryId、@V 等）
-
-```
 # 六、会话历史管理 ChatMemory
 
+```java
 1. 创建ChatMemomory，在工厂类builder中设置 ，历史窗口大小
 
 ```java
@@ -365,24 +367,16 @@ Spring 启动时只创建了一个 ChatMemoryProvider（就像一个笔记本工
 注解@MemoryId，@UserMessage ，传输ChatMomoryProvider
 
 ```java
-
-@SystemMessage(fromResource = "rag-prompt.txt")
-String chat(@MemoryId int memoryId, @UserMessage String message);
-
+ @SystemMessage(fromResource= "system-prompt.txt")
+ String chat(@MemoryId int memoryId, @UserMessage String message);
 
 
-/*多用户*/
-        return(AiCodeHelperService)
 
-builder(AiCodeHelperService .class).
-
-chatModel(qwenChatModel).
-
-chatMemoryProvider(memoryId->MessageWindowChatMemory.
-
-withMaxMessages(10)).
-
-build();
+ /*多用户*/
+        return (AiCodeHelperService) builder(AiCodeHelperService.class).
+                chatModel(qwenChatModel).
+                chatMemoryProvider(memoryId-> MessageWindowChatMemory.withMaxMessages(10)).
+                build();
 ```
 
 持久化历史信息见[langchain4j-examples/tutorials/src/main/java/_09_ServiceWithPersistentMemoryForEachUserExample.java at main · langchain4j/langchain4j-examples](https://github.com/langchain4j/langchain4j-examples/blob/main/tutorials/src/main/java/_09_ServiceWithPersistentMemoryForEachUserExample.java#L31)
@@ -400,16 +394,12 @@ build();
 ```java
 public interface AiCodeHelperService {
 
-//    @SystemMessage(fromResource= "rag-prompt.txt")
+//    @SystemMessage(fromResource= "system-prompt.txt")
 //    String chat(@MemoryId String memoryId, @UserMessage String message);
 
-    @SystemMessage(fromResource = "rag-prompt.txt")
+    @SystemMessage(fromResource= "system-prompt.txt")
     Report chat(@MemoryId String memoryId, @UserMessage String message);
-
-    record Report(String name, List<String> sugestionList) {
-    }
-
-    ;
+    record Report(String name, List<String> sugestionList){};
 }
 ```
 
@@ -567,10 +557,8 @@ public class RagConfig {
 
       return retriever;
     }
-}
+} 
 ```
-
-## 
 
 ```java
 @Test
@@ -578,10 +566,8 @@ public class RagConfig {
         String result= aiCodeHelperService.chat("Mysql的锁有哪些");
         System.out.println(result);
 
-    }
+    } 
 ```
-
-## 
 
 ![](C:\Users\25380\AppData\Roaming\marktext\images\2026-09-03-15-47-08-image.png)
 
@@ -748,15 +734,14 @@ public class SafeInputGuardrail implements InputGuardrail {
 ```java
 加入InputGuardrails注解
 @InputGuardrails(SafeInputGuardrail.class)
-
 public interface AiCodeHelperService {
 
-//    @SystemMessage(fromResource= "rag-prompt.txt")
+//    @SystemMessage(fromResource= "system-prompt.txt")
 //    String chat(@MemoryId String memoryId, @UserMessage String message);
 
-    @SystemMessage(fromResource = "rag-prompt.txt")
+    @SystemMessage(fromResource= "system-prompt.txt")
     String chat(@UserMessage String message);
-//    @SystemMessage(fromResource= "rag-prompt.txt")
+//    @SystemMessage(fromResource= "system-prompt.txt")
 //    Report chat(@MemoryId String memoryId, @UserMessage String message);
 //    record Report(String name, List<String> sugestionList){};
 }
@@ -945,7 +930,6 @@ public class ChatController {
 ![](C:\Users\25380\AppData\Roaming\marktext\images\2026-09-04-10-05-39-image.png)
 
 ```java
-
 @Configuration
 //service工厂
 public class AiCodeHelperServiceFactory {
@@ -958,7 +942,6 @@ public class AiCodeHelperServiceFactory {
 
     @Resource
     private ContentRetriever contentRetriever;
-
     /**
      * 创建并配置AiCodeHelperService类型，name=aiCodeHelperService的bean
      * @return 返回一个配置好的AiCodeHelperService实例
@@ -969,8 +952,8 @@ public class AiCodeHelperServiceFactory {
         return (AiCodeHelperService) AiServices.builder(AiCodeHelperService.class).
                 chatModel(myQwenChatModel).
                 streamingChatModel(streamingChatModel). //流式输出模型
-                        chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10)). //每个对话独立存储,lambda表达式,根据memoryId创建一个MessageWindowChatMemory实例
-                        contentRetriever(contentRetriever).
+                chatMemoryProvider(memoryId-> MessageWindowChatMemory.withMaxMessages(10)). //每个对话独立存储,lambda表达式,根据memoryId创建一个MessageWindowChatMemory实例
+                contentRetriever(contentRetriever).
                 build();
     }
 
@@ -978,9 +961,10 @@ public class AiCodeHelperServiceFactory {
 
 @InputGuardrails(SafeInputGuardrail.class)
 public interface AiCodeHelperService {
-    @SystemMessage(fromResource = "rag-prompt.txt")
-    Flux<String> chat(@MemoryId int memoryId, @UserMessage String message);
+    @SystemMessage(fromResource= "system-prompt.txt")
+    Flux<String> chat(@MemoryId int memoryId,@UserMessage String message);
 }
+
 
 
 @RestController
@@ -990,9 +974,9 @@ public class AiController {
     private AiCodeHelperService aiCodeHelperService;
 
     @GetMapping("/chat")
-    public Flux<ServerSentEvent<String>> chat(int memoryId, String message) {
-        return aiCodeHelperService.chat(memoryId, message).
-                map(chunk -> ServerSentEvent.
+    public Flux<ServerSentEvent<String>> chat(int memoryId, String message){
+        return aiCodeHelperService.chat(memoryId,message).
+                map(chunk-> ServerSentEvent.
                         <String>builder().data(chunk).build());
 
 
@@ -1002,4 +986,8 @@ public class AiController {
 
 # 十四、前端生成
 
-![](C:\Users\25380\AppData\Roaming\marktext\images\2026-09-04-11-30-24-image.png)
+
+
+
+
+

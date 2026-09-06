@@ -1,25 +1,21 @@
 package com.xuqi.aicodehelper.ai.rag;
 
-import dev.langchain4j.store.embedding.EmbeddingStore;
-import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 /**
- * 嵌入式存储配置类
- * 用于配置和管理嵌入向量存储的实现方式
+ * 【已废弃】全局嵌入式存储配置
+ * <p>
+ * 废弃原因：原来这里提供的是全局唯一的 InMemoryEmbeddingStore，
+ * 所有用户共享同一份向量数据，既无法隔离，服务重启后也会全部丢失。
+ * <p>
+ * 现在的实现：
+ * - 每用户一个独立向量库，见 {@link UserEmbeddingStoreManager}
+ * - 落盘路径 data/vector/{userId}/embedding-store.json，重启自动恢复
+ * - 检索器按用户动态构建，见 {@link RagConfig}
+ * <p>
+ * 本类已不再声明任何 Bean，可以直接删除。
  */
-@Configuration
-public class EmbeddingStoreConfig {
-    /**
-     * 创建并配置嵌入式存储Bean
-     * @return 返回一个内存版的嵌入式存储实现
-     * 内存版嵌入式存储适合学习和测试场景使用
-     * 数据在应用重启后会清空，不适合生产环境使用
-     */
-    @Bean
-    public EmbeddingStore embeddingStore() {
-        // 这是内存版，适合学习和测试，数据在应用重启后会清空
-        return new InMemoryEmbeddingStore<>();
+@Deprecated
+public final class EmbeddingStoreConfig {
+
+    private EmbeddingStoreConfig() {
     }
 }

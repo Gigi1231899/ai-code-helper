@@ -1,0 +1,28 @@
+# =============================================================
+# 后端镜像构建上下文排除项（docker-compose.yml 里 app 的 context 是项目根目录）
+# 不加这个的话 .git / target / 前端产物都会被传给 Docker daemon，构建很慢
+# =============================================================
+.git
+.gitignore
+.idea
+.vscode
+*.iml
+
+# Maven 构建产物，镜像内会重新打包
+target/
+
+# 前端源码与产物，后端镜像用不到
+ai-code-helper-frontend/
+node_modules/
+
+# 本地文档与笔记
+*.md
+*.png
+
+# 密钥与环境文件，禁止打进镜像
+.env
+.env.*
+!.env.example
+
+# 本地运行时数据（已通过 volume 挂载）
+data/

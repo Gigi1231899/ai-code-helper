@@ -1,0 +1,204 @@
+/* =============================================================
+   全局样式：软萌清新马卡龙科技风
+   主色 薄荷绿 #98E4C1 / 辅助 晴空蓝 #90CAF9 / 奶油黄 #FFEAA7
+   ============================================================= */
+
+:root {
+  --mint: #98e4c1;
+  --mint-deep: #5fc99b;
+  --mint-soft: #e6f9f1;
+  --sky: #90caf9;
+  --sky-soft: #e8f3fe;
+  --cream: #ffeaa7;
+  --bg: #fafeff;
+  --card: #ffffff;
+  --text: #2f4858;
+  --text-light: #7b8f9d;
+  --danger: #ff9b9b;
+
+  --radius-lg: 24px;
+  --radius-md: 18px;
+  --radius-sm: 12px;
+  --shadow-soft: 0 8px 24px rgba(143, 190, 220, 0.18);
+  --shadow-hover: 0 12px 30px rgba(143, 190, 220, 0.28);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  /* 无衬线圆润字体 */
+  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Nunito',
+    'Segoe UI', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------- 通用按钮 ---------------- */
+.btn {
+  border: none;
+  cursor: pointer;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 22px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: var(--mint);
+  color: #1f4d3d;
+  box-shadow: var(--shadow-soft);
+}
+
+.btn-primary:hover {
+  background: var(--mint-deep);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.btn-ghost {
+  background: #fff;
+  color: var(--text);
+  border: 2px solid var(--mint);
+}
+
+.btn-ghost:hover {
+  background: var(--mint-soft);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---------------- 通用卡片 ---------------- */
+.card {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+/* ---------------- AI 回答里的 Markdown 样式 ----------------
+   注意：这部分必须写在全局样式里。
+   消息内容是 v-html 动态插入的，Vue 的 scoped 样式无法作用到动态节点上。
+------------------------------------------------------------ */
+.markdown-body {
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.markdown-body > *:first-child {
+  margin-top: 0;
+}
+
+.markdown-body > *:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body p {
+  margin: 8px 0;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  margin: 14px 0 8px;
+  font-size: 15px;
+  color: #2f4858;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  margin: 8px 0;
+  padding-left: 22px;
+}
+
+.markdown-body li {
+  margin: 4px 0;
+}
+
+.markdown-body a {
+  color: var(--mint-deep);
+}
+
+/* 行内代码 */
+.markdown-body code {
+  background: rgba(95, 201, 155, 0.14);
+  color: #1f6b52;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+}
+
+/* 代码块 */
+.markdown-body pre {
+  background: #f7fbf9;
+  border: 1px solid #e6f2ee;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.markdown-body pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: 13px;
+}
+
+.markdown-body blockquote {
+  margin: 10px 0;
+  padding: 8px 14px;
+  border-left: 4px solid var(--mint);
+  background: rgba(152, 228, 193, 0.12);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: #4a6b5e;
+}
+
+.markdown-body table {
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 13px;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e6f2ee;
+  padding: 6px 10px;
+}
+
+.markdown-body th {
+  background: var(--mint-soft);
+}
+
+/* ---------------- 滚动条美化 ---------------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d7ece3;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
