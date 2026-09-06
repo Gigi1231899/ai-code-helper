@@ -4,6 +4,8 @@
 application-local.yml
 # 运行时数据：用户上传的知识库文件 + 每用户向量库（含个人信息，不入库）
 data/
+resources/db/ai_code_helper.sql
+
 # 构建日志
 build.log
 !**/src/main/resources/docs/
