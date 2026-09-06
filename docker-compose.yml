@@ -47,7 +47,7 @@ services:
       - mysql-data:/var/lib/mysql
       # 容器首次启动自动初始化表结构
       # 注意：mysql-data 卷里一旦有数据，这个文件就不会再执行了，后续改表结构需手动进容器执行
-      - ./src/main/resources/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - ./src/main/resources/db/ai_code_helper.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     healthcheck:
       test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1', '-uroot', '-p${DB_PASSWORD:1234}']
       interval: 10s
