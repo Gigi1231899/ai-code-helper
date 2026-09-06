@@ -6,8 +6,7 @@
 # =============================================================
 
 # ---------- Stage 1: 用 Maven 镜像编译打包 ----------
-FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/maven:3.9.6-eclipse-temurin-21-alpine AS build
-
+FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/maven:3.9.9-eclipse-temurin-21-alpine AS build
 WORKDIR /app
 
 # 先只复制 pom.xml，利用 Docker 层缓存，依赖不变时不重复下载
@@ -19,7 +18,7 @@ COPY src ./src
 RUN mvn -B clean package -DskipTests
 
 # ---------- Stage 2: 运行时镜像 ----------
-FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/eclipse-temurin:21-jre-jammy
+FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/eclipse-temurin:21-jre-alpine-3.23
 
 WORKDIR /app
 

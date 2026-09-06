@@ -31,10 +31,10 @@ public class AuthController {
      * @param request 用户名 + 密码
      * @return 注册成功返回 token（免二次登录）
      */
-    @PostMapping("/register")
-    public Result<LoginResponse> register(@RequestBody AuthRequest request) {
-        return Result.ok(userService.register(request.getUsername(), request.getPassword()));
-    }
+//    @PostMapping("/register")
+//    public Result<LoginResponse> register(@RequestBody AuthRequest request) {
+//        return Result.ok(userService.register(request.getUsername(), request.getPassword()));
+//    }
 
     /**
      * 用户登录

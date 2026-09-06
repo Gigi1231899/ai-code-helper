@@ -41,15 +41,15 @@ services:
     # 【修复】生产环境不要把数据库暴露到公网，已注释（注意 ports 键本身也要注释，
     # 否则留一个空 ports 会被当成 null，compose 会报 ports must be a array）
     # 需要用 Navicat 等工具临时连库时再打开（用完后记得关掉、并配置防火墙只允许内网）
-    # ports:
-    #   - '3306:3306'
+    ports:
+      - '127.0.0.1:3306:3306'
     volumes:
       - mysql-data:/var/lib/mysql
       # 容器首次启动自动初始化表结构
       # 注意：mysql-data 卷里一旦有数据，这个文件就不会再执行了，后续改表结构需手动进容器执行
       - ./src/main/resources/db/ai_code_helper.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1', '-uroot', '-p${DB_PASSWORD:1234}']
+      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1', '-uroot', '-p${DB_PASSWORD}']
       interval: 10s
       timeout: 5s
       # 【修复】首次启动要初始化数据目录并执行 schema.sql，可能超过 10×10s=100s，
@@ -70,7 +70,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: prod
       # 容器内通过服务名 mysql 访问数据库
-      DB_URL: jdbc:mysql://mysql:3306/ai_code_helper?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      DB_URL: jdbc:mysql://ai-code-helper-mysql:3306/ai_code_helper?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
       DB_USERNAME: root
       DB_PASSWORD: ${DB_PASSWORD}
       # JWT 密钥，HS256 要求至少 32 字节
